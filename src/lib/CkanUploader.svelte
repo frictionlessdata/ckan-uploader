@@ -1,7 +1,7 @@
 <script>
   import '../app.css'
   import axios from 'axios';
-  import { onMount } from 'svelte';
+  import { onMount, createEventDispatcher } from 'svelte';
 
   let fileVar;
   export let upload_url;
@@ -10,6 +10,8 @@
   let is_uploading = false
   let is_waiting = false
   let is_completed = false
+
+  let dispatch = createEventDispatcher()
 
   async function uploadFile (body, setPercentage) {
     try {
@@ -29,7 +31,7 @@
       };
   
       const { data } = await axios.post(
-        upload_url + "/api/3/action/resource_create",
+        upload_url + "/api/3/action/resource_create_with_schema",
         body,
         options
       );
@@ -52,7 +54,11 @@
       formData.append("package_id", dataset_id)
 
       is_uploading = true
-      await uploadFile(formData, setPercentage);
+      let returnData = await uploadFile(formData, setPercentage);
+      let eventData = {
+        data: returnData
+      }
+      dispatch('fileUploaded', eventData)
       is_waiting = false
       is_completed = true
     } catch (err) {
@@ -62,17 +68,17 @@
   }
 </script>
 
-<div id="fileUploadWidget" class="border-solid border-2 rounded border-sky-900 bg-sky-500 flex place-content-center">
-  <div id="label" class="w-full relative flex place-content-center text-sky-100">
+<div id="fileUploadWidget" class="border-solid border-2 rounded border-sky-900 bg-sky-500 flex h-8">
+  <div id="label" class="w-full h-full relative text-sky-100 place-content-center justify-center flex">
   {#if !is_uploading && !is_waiting && !is_completed}
     Select a file to upload
   {:else }
-  <div id="percentage" class="relative w-full flex place-content-center">
+  <div id="percentage" class="w-full h-full text-center align-middle flex justify-center">
     <div class="z-20">
     {#if !is_waiting }
-{#if !is_completed}
-    {percentage}%
-{/if}
+      {#if !is_completed}
+          {percentage}%
+      {/if}
     {:else}
     Waiting for data schema detection...
     {/if}
