@@ -3,15 +3,20 @@
   import axios from 'axios';
   import { onMount, createEventDispatcher } from 'svelte';
 
-  let fileVar;
   export let upload_url;
   export let dataset_id;
+  export let resource_id;
+  export let update = '';
+  export let current_url;
+  
+  let fileVar;
   let percentage = 0;
   let is_uploading = false
   let is_waiting = false
   let is_completed = false
-
+  let url_type = ''
   let dispatch = createEventDispatcher()
+  let action_type = update?'update':'create'
 
   async function uploadFile (body, setPercentage) {
     try {
@@ -31,7 +36,7 @@
       };
   
       const { data } = await axios.post(
-        upload_url + "/api/3/action/resource_create_with_schema",
+        `${upload_url}/api/3/action/resource_${action_type}_with_schema`,
         body,
         options
       );
@@ -52,12 +57,16 @@
       const formData = new FormData();
       formData.append("upload", file);
       formData.append("package_id", dataset_id)
+      if (update)
+          formData.append("id", resource_id)
 
       is_uploading = true
       let returnData = await uploadFile(formData, setPercentage);
       let eventData = {
         data: returnData
       }
+      current_url = returnData.result.url
+      url_type = 'upload'
       dispatch('fileUploaded', eventData)
       is_waiting = false
       is_completed = true
@@ -67,11 +76,15 @@
     }
   }
 </script>
-
+{ update }
 <div id="fileUploadWidget" class="border-solid border-2 rounded border-sky-900 bg-sky-500 flex h-8">
   <div id="label" class="w-full h-full relative text-sky-100 place-content-center justify-center flex">
   {#if !is_uploading && !is_waiting && !is_completed}
+    {#if update}
+      Select a file to replace the current one
+    {:else}
     Select a file to upload
+    {/if}
   {:else }
   <div id="percentage" class="w-full h-full text-center align-middle flex justify-center">
     <div class="z-20">
@@ -91,8 +104,13 @@
   </div>
   {/if}
   </div>
-
+  <input type="hidden" name="url_type" bind:value={url_type}>
+  <input type="hidden" name="clear_upload" value={(update != '')?'true':''}>
   <input id="fileUpload" type="file" bind:files={fileVar} on:change={handleFileChange}>
+
+</div>
+<div class="controls pt-4">
+  <label for="field_url">URL</label> <input id="field_url" class="form-control" type="text" name="url" bind:value={current_url}>
 </div>
 
 
@@ -100,7 +118,7 @@
   #fileUploadWidget {
     position: relative;
     display: flex;
-    max-width: 300px;
+    max-width: 400px;
   }
 
   #fileUpload {
