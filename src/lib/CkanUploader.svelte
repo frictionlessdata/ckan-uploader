@@ -55,8 +55,12 @@
     try {
       const file = event.target.files[0];
       const formData = new FormData();
+
       formData.append("upload", file);
       formData.append("package_id", dataset_id)
+
+      // If it's updating a already existing resource
+      // add some additional fields
       if (update) {
           formData.append("id", resource_id)
           formData.append("clear_upload", true)
@@ -109,11 +113,9 @@
   <input id="fileUpload" type="file" bind:files={fileVar} on:change={handleFileChange}>
 
 </div>
-{#if url_type != 'upload'}
-<div class="controls pt-4">
-  <label for="field_url">URL</label> <input id="field_url" class="form-control" type="text" name="url" bind:value={current_url}>
+<div style="display: { (url_type != 'upload')?'inline':'none' }" class="controls pt-4">
+  <label for="field_url">URL</label> <input id="field_url" styleclass="form-control" type="text" name="url" bind:value={current_url}>
 </div>
-{/if}
 
 <style>
   #fileUploadWidget {
