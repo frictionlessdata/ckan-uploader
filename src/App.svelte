@@ -8,6 +8,7 @@
   export let resource_id
   export let update
   export let current_url
+  export let url_type
 
   let dispatch = createEventDispatcher()
   let el 
@@ -19,5 +20,5 @@
 </script>
 
 <main class="tailwind" bind:this={el}>
-  <CkanUploader upload_url={upload_url} dataset_id={dataset_id} resource_id={resource_id} update={update} current_url={current_url} on:fileUploaded={handleEvent}/>
+  <CkanUploader upload_url={upload_url} dataset_id={dataset_id} resource_id={resource_id} update={update} current_url={current_url} url_type={url_type} on:fileUploaded={handleEvent}/>
 </main>

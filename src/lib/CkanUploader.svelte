@@ -8,13 +8,13 @@
   export let resource_id;
   export let update = '';
   export let current_url;
+  export let url_type = ''
   
   let fileVar;
   let percentage = 0;
   let is_uploading = false
   let is_waiting = false
   let is_completed = false
-  let url_type = ''
   let dispatch = createEventDispatcher()
   let action_type = update?'update':'create'
 
@@ -57,8 +57,11 @@
       const formData = new FormData();
       formData.append("upload", file);
       formData.append("package_id", dataset_id)
-      if (update)
+      if (update) {
           formData.append("id", resource_id)
+          formData.append("clear_upload", true)
+          formData.append("url_type", url_type)
+      }
 
       is_uploading = true
       let returnData = await uploadFile(formData, setPercentage);
@@ -76,7 +79,6 @@
     }
   }
 </script>
-{ update }
 <div id="fileUploadWidget" class="border-solid border-2 rounded border-sky-900 bg-sky-500 flex h-8">
   <div id="label" class="w-full h-full relative text-sky-100 place-content-center justify-center flex">
   {#if !is_uploading && !is_waiting && !is_completed}
@@ -104,15 +106,14 @@
   </div>
   {/if}
   </div>
-  <input type="hidden" name="url_type" bind:value={url_type}>
-  <input type="hidden" name="clear_upload" value={(update != '')?'true':''}>
   <input id="fileUpload" type="file" bind:files={fileVar} on:change={handleFileChange}>
 
 </div>
+{#if url_type != 'upload'}
 <div class="controls pt-4">
   <label for="field_url">URL</label> <input id="field_url" class="form-control" type="text" name="url" bind:value={current_url}>
 </div>
-
+{/if}
 
 <style>
   #fileUploadWidget {
