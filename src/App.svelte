@@ -19,6 +19,6 @@
 
 </script>
 
-<main class="tailwind" bind:this={el}>
+<main bind:this={el}>
   <CkanUploader upload_url={upload_url} dataset_id={dataset_id} resource_id={resource_id} update={update} current_url={current_url} url_type={url_type} on:fileUploaded={handleEvent}/>
 </main>

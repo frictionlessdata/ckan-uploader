@@ -1,5 +1,4 @@
 <script>
-  import '../app.css'
   import axios from 'axios';
   import { onMount, createEventDispatcher } from 'svelte';
 
@@ -83,38 +82,42 @@
     }
   }
 </script>
-<div id="fileUploadWidget" class="border-solid border-2 rounded border-sky-900 bg-sky-500 flex h-8">
-  <div id="label" class="w-full h-full relative text-sky-100 place-content-center justify-center flex">
-  {#if !is_uploading && !is_waiting && !is_completed}
-    {#if update}
-      Select a file to replace the current one
-    {:else}
-    Select a file to upload
-    {/if}
-  {:else }
-  <div id="percentage" class="w-full h-full text-center align-middle flex justify-center">
-    <div class="z-20">
-    {#if !is_waiting }
-      {#if !is_completed}
-          {percentage}%
+<div class="form-group">
+  <div id="fileUploadWidget">
+    <div id="widget-label">
+    {#if !is_uploading && !is_waiting && !is_completed}
+      {#if update}
+        Select a file to replace the current one
+      {:else}
+      Select a file to upload
       {/if}
-    {:else}
-    Waiting for data schema detection...
-    {/if}
-    {#if is_completed }
-    File uploaded
+    {:else }
+    <div id="percentage">
+      <div class="percentage-text">
+      {#if !is_waiting }
+        {#if !is_completed}
+            {percentage}%
+        {/if}
+      {:else}
+      Waiting for data schema detection...
+      {/if}
+      {#if is_completed }
+      File uploaded
+      {/if}
+      </div>
+      <div id="percentage-bar" style:width="{percentage}%">
+      </div>
+    </div>
     {/if}
     </div>
-    <div id="percentage-bar" style:width="{percentage}%" class="ease-in duration-300 z-10 absolute top-0 left-0 bottom-0 bg-blue-800">
+    <input id="fileUpload" type="file" bind:files={fileVar} on:change={handleFileChange}>
+  </div>
+  <div style="display: { (url_type != 'upload')?'inline':'none' }" class="controls">
+    <label class="control-label" for="field_url">URL</label>
+    <div class="controls">
+      <input id="field_url" class="form-control" type="text" name="url" bind:value={current_url}>
     </div>
   </div>
-  {/if}
-  </div>
-  <input id="fileUpload" type="file" bind:files={fileVar} on:change={handleFileChange}>
-
-</div>
-<div style="display: { (url_type != 'upload')?'inline':'none' }" class="controls pt-4">
-  <label for="field_url">URL</label> <input id="field_url" styleclass="form-control" type="text" name="url" bind:value={current_url}>
 </div>
 
 <style>
@@ -122,6 +125,42 @@
     position: relative;
     display: flex;
     max-width: 400px;
+    border: 2px solid #0c4a6e;
+    border-radius: 4px;
+    background-color: #0284c7;
+    margin-bottom: 10px;
+  }
+
+  #fileUploadWidget #widget-label {
+    width: 100%;
+    height: 100%;
+    color: white;
+    justify-content: center;
+    display: flex;
+  }
+
+  #percentage {
+    width: 100%;
+    height: 100%;
+    align: middle;
+    justify-content: center;
+    display: flex;
+    position: relative;
+  }
+
+  .percentage-text {
+    z-index: 20;
+  }
+
+  #percentage-bar {
+    z-index: 10;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    background-color: #1e3a8a;
+    transition: width 0.3s;
+    transition-timing-function: ease-in;
   }
 
   #fileUpload {
