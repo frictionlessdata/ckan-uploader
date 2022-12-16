@@ -35,7 +35,7 @@
       };
   
       const { data } = await axios.post(
-        `${upload_url}/api/3/action/resource_${action_type}_with_schema`,
+        `${upload_url}/api/3/action/resource_${action_type}`,
         body,
         options
       );
