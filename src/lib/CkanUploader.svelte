@@ -34,8 +34,12 @@
         }
       };
   
+      const ckan_endppoint = (action_type == 'update') ?
+          `${upload_url}/dataset/${dataset_id}/resource/${resource_id}/file` :
+          `${upload_url}/dataset/${dataset_id}/resource/file`
+      // "/dataset/<id>/resource/<resource_id>/file"
       const { data } = await axios.post(
-        `${upload_url}/api/3/action/resource_${action_type}`,
+       `${upload_url}/dataset/${dataset_id}/resource/file`,
         body,
         options
       );
