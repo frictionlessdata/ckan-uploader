@@ -8,7 +8,7 @@
   export let update = '';
   export let current_url;
   export let url_type = ''
-  
+
   let fileVar;
   let percentage = 0;
   let is_uploading = false
@@ -34,12 +34,12 @@
         }
       };
   
-      const ckan_endppoint = (action_type == 'update') ?
+      const ckan_endpoint = (action_type == 'update') ?
           `${upload_url}/dataset/${dataset_id}/resource/${resource_id}/file` :
           `${upload_url}/dataset/${dataset_id}/resource/file`
-      // "/dataset/<id>/resource/<resource_id>/file"
+
       const { data } = await axios.post(
-       `${upload_url}/dataset/${dataset_id}/resource/file`,
+        ckan_endpoint,
         body,
         options
       );
@@ -73,9 +73,9 @@
       is_uploading = true
       let returnData = await uploadFile(formData, setPercentage);
       let eventData = {
-        data: returnData
+        data: returnData,
       }
-      current_url = returnData.result.url
+      current_url = returnData.url
       url_type = 'upload'
       dispatch('fileUploaded', eventData)
       is_waiting = false
@@ -131,7 +131,7 @@
     max-width: 400px;
     border: 2px solid #0c4a6e;
     border-radius: 4px;
-    background-color: #0284c7;
+    background-color: rgb(22, 73, 89);
     margin-bottom: 10px;
   }
 
@@ -162,7 +162,6 @@
     top: 0;
     left: 0;
     bottom: 0;
-    background-color: #1e3a8a;
     transition: width 0.3s;
     transition-timing-function: ease-in;
   }

@@ -14,7 +14,7 @@
   let el 
 
   function handleEvent(evt) {
-    el.parentNode.dispatchEvent(new CustomEvent('fileUploaded', {'detail': evt.detail.data.result }))
+    el.parentNode.dispatchEvent(new CustomEvent('fileUploaded', {'detail': evt.detail.data }))
   }
 
 </script>
