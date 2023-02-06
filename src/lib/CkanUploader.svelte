@@ -164,6 +164,7 @@
     bottom: 0;
     transition: width 0.3s;
     transition-timing-function: ease-in;
+    background-color: rgba(255, 255, 255, 0.33);
   }
 
   #fileUpload {
