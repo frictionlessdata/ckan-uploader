@@ -16,6 +16,16 @@
   let is_completed = false
   let dispatch = createEventDispatcher()
   let action_type = update?'update':'create'
+  let new_url = ''
+  let resource_type = url_type
+  let resource_url = ''
+  let current_file_url = ''
+
+  if (url_type != 'upload') {
+    resource_url = current_url
+  } else {
+    current_file_url = getFilename(current_url)
+  }
 
   async function uploadFile (body, setPercentage) {
     try {
@@ -54,6 +64,19 @@
     percentage = newPercentage
   }
 
+  function getFilename(url) {
+    let urlParts = url.split('/')
+    if (urlParts.length > 0) {
+      return urlParts[urlParts.length - 1]
+    } else {
+      return urlParts[0]
+    }
+  }
+
+  function changeResourceType(url_type) {
+      resource_type = url_type
+  }
+
   async function handleFileChange(event) {
     try {
       const file = event.target.files[0];
@@ -75,7 +98,7 @@
       let eventData = {
         data: returnData,
       }
-      current_url = returnData.url
+      current_file_url = getFilename(returnData.url)
       url_type = 'upload'
       dispatch('fileUploaded', eventData)
       is_waiting = false
@@ -87,7 +110,14 @@
   }
 </script>
 <div class="form-group">
-  <div id="fileUploadWidget">
+  <a class="btn btn-default" class:active={resource_type == 'upload'} on:click={(e) => { changeResourceType('upload') }}>
+    <i class="fa fa-cloud-upload"/>File
+  </a>
+  <a class="btn btn-default" class:active={resource_type != 'upload' && resource_type != 'None'} on:click={(e) => { changeResourceType('') }}>
+    <i class="fa fa-globe"/>Link
+  </a>
+  {#if resource_type == 'upload'}
+  <div id="fileUploadWidget"> 
     <div id="widget-label">
     {#if !is_uploading && !is_waiting && !is_completed}
       {#if update}
@@ -116,21 +146,42 @@
     </div>
     <input id="fileUpload" type="file" bind:files={fileVar} on:change={handleFileChange}>
   </div>
-  <div style="display: { (url_type != 'upload')?'inline':'none' }" class="controls">
-    <label class="control-label" for="field_url">URL</label>
+  {/if}
+
+  {#if resource_type == 'upload'}
+    {#if current_file_url != ''}
+  <div class="controls">
+    <label class="control-label" for="field_url">Current file</label>
     <div class="controls">
-      <input id="field_url" class="form-control" type="text" name="url" bind:value={current_url}>
+      <input readonly={(url_type != 'upload')?undefined:true } id="field_url" class="form-control" type="text" name="url" bind:value={current_file_url}>
     </div>
   </div>
+    {/if}
+  {:else}
+  {#if resource_type != 'None'}
+  <div id="resourceURL" class="controls">
+    <label class="control-label" for="field_url">URL</label>
+    <div class="controls">
+      <input id="field_url" class="form-control" type="text" name="url" bind:value={resource_url}>
+      <input type="hidden" name="clear_upload" value="true">
+    </div>
+  </div>
+  {/if}
+  {/if}
 </div>
 
 <style>
+  #resourceURL {
+    margin-top: 10px;
+  }
+
   #fileUploadWidget {
     position: relative;
     display: flex;
     max-width: 400px;
     border: 2px solid #0c4a6e;
     border-radius: 4px;
+    margin-top: 10px;
     background-color: rgb(22, 73, 89);
     margin-bottom: 10px;
   }
