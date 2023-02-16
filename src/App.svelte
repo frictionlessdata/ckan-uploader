@@ -13,6 +13,8 @@
   let dispatch = createEventDispatcher()
   let el 
 
+  // we need this to propagate the event from the uploader to outside of the svelte component, otherwise
+  // we can't listen to events outside the widget
   function handleEvent(evt) {
     el.parentNode.dispatchEvent(new CustomEvent('fileUploaded', {'detail': evt.detail.data }))
   }
