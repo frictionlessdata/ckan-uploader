@@ -109,122 +109,119 @@
     }
   }
 </script>
-<div class="form-group">
-  <a class="btn btn-default" class:active={resource_type == 'upload'} on:click={(e) => { changeResourceType('upload') }}>
-    <i class="fa fa-cloud-upload"/>File
-  </a>
-  <a class="btn btn-default" class:active={resource_type != 'upload' && resource_type != 'None'} on:click={(e) => { changeResourceType('') }}>
-    <i class="fa fa-globe"/>Link
-  </a>
-  {#if resource_type == 'upload'}
-  <div id="fileUploadWidget"> 
-    <div id="widget-label">
-    {#if !is_uploading && !is_waiting && !is_completed}
-      {#if update}
-        Select a file to replace the current one
-      {:else}
-      Select a file to upload
-      {/if}
-    {:else }
-    <div id="percentage">
-      <div class="percentage-text">
-      {#if !is_waiting }
-        {#if !is_completed}
-            {percentage}%
-        {/if}
-      {:else}
-      Waiting for data schema detection...
-      {/if}
-      {#if is_completed }
-      File uploaded
-      {/if}
-      </div>
-      <div id="percentage-bar" style:width="{percentage}%">
-      </div>
-    </div>
-    {/if}
-    </div>
-    <input id="fileUpload" type="file" bind:files={fileVar} on:change={handleFileChange}>
-  </div>
-  {/if}
 
-  {#if resource_type == 'upload'}
-    {#if current_file_url != ''}
-  <div class="controls">
-    <label class="control-label" for="field_url">Current file</label>
-    <div class="controls">
-      <input readonly={(url_type != 'upload')?undefined:true } id="field_url" class="form-control" type="text" name="url" bind:value={current_file_url}>
+<div class="ckan-resource-upload-field form-group">
+
+  <!-- Upload / Link buttons -->
+  <input type="radio" id="resource-url-none" name="url_type" value="" checked="">
+  <div class="select-type">
+    <label id="resource-menu-label" class="form-label">Data</label>
+    <div role="group" aria-labelledby="resource-menu-label">
+      <button type="button" class="btn btn-default" id="resource-upload-button" title="Upload a file on your computer" onclick="
+              document.getElementById('resource-url-upload').checked = true;
+              document.getElementById('field-resource-upload').click();
+            "><i class="fa fa-cloud-upload"></i>Upload</button>
+      <button type="button" class="btn btn-default" id="resource-link-button" title="Link to a URL on the internet (you can also link to an API)" onclick="
+              document.getElementById('resource-url-link').checked = true;
+              document.getElementById('field-resource-url').focus();
+            "><i class="fa fa-globe"></i>Link</button>
     </div>
   </div>
-    {/if}
-  {:else}
-  {#if resource_type != 'None'}
-  <div id="resourceURL" class="controls">
-    <label class="control-label" for="field_url">URL</label>
-    <div class="controls">
-      <input id="field_url" class="form-control" type="text" name="url" bind:value={resource_url}>
-      <input type="hidden" name="clear_upload" value="true">
+
+
+  <!-- File input -->
+  <input type="radio" id="resource-url-upload" name="url_type" value="upload">
+  <div class="select-type">
+    <div class="upload-type">
+      <button type="button" class="btn btn-danger btn-remove-url-upload" onclick="
+        document.getElementById('resource-url-none').checked = true;
+        document.getElementById('resource-upload-button').focus();
+        $('#field-resource-upload').replaceWith($('#field-resource-upload').val('').clone(true))
+      ">Remove</button>
+
+      <div class="form-group control-full">
+        <label class="form-label" for="field-resource-upload">File</label>
+        <div class="controls ">
+          <input id="field-resource-upload" type="file" name="upload" value="" placeholder="" class="form-control">
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+
+  <!-- URL input -->
+  <input type="radio" id="resource-url-link" name="url_type" value="">
+  <div class="select-type">
+
+    <button type="button" class="btn btn-danger btn-remove-url-upload" onclick="
+        document.getElementById('resource-url-none').checked = true;
+        document.getElementById('resource-upload-button').focus();
+        $('#field-resource-url').val('')
+      ">Remove</button>
+
+    <div class="form-group control-full">
+      <label class="form-label" for="field-resource-url">URL</label>
+      <div class="controls ">
+        <input id="field-resource-url" type="url" name="url" value="" placeholder="http://example.com/external-data.csv" class="form-control">
+      </div>
     </div>
   </div>
-  {/if}
-  {/if}
+
 </div>
 
+
 <style>
-  #resourceURL {
-    margin-top: 10px;
+
+  .ckan-resource-upload-field > input[type=radio] {
+    display: none;
   }
 
-  #fileUploadWidget {
+  .ckan-resource-upload-field > div.select-type {
     position: relative;
-    display: flex;
-    max-width: 400px;
-    border: 2px solid #0c4a6e;
-    border-radius: 4px;
-    margin-top: 10px;
-    background-color: rgb(22, 73, 89);
-    margin-bottom: 10px;
+    display: none;
   }
 
-  #fileUploadWidget #widget-label {
-    width: 100%;
-    height: 100%;
-    color: white;
-    justify-content: center;
-    display: flex;
+  .ckan-resource-upload-field > input[type=radio]:checked + div.select-type {
+    display: block;
   }
 
-  #percentage {
-    width: 100%;
-    height: 100%;
-    align: middle;
-    justify-content: center;
-    display: flex;
-    position: relative;
+  .ckan-resource-upload-field label.btn::after {
+    content: "";
   }
 
-  .percentage-text {
-    z-index: 20;
+  .ckan-resource-upload-field .btn-remove-url .icon-remove {
+    margin-right: 0;
   }
 
-  #percentage-bar {
-    z-index: 10;
+  .ckan-resource-upload-field input#field-clear-upload {
+    display: none;
+  }
+
+  .ckan-resource-upload-field input#field-clear-upload + div.upload-type {
+    display: block;
+  }
+
+  .ckan-resource-upload-field input#field-clear-upload ~ .upload-type {
+    display: none;
+  }
+
+  .ckan-resource-upload-field input#field-clear-upload:checked + div.upload-type {
+    display: none;
+  }
+
+  .ckan-resource-upload-field input#field-clear-upload:checked ~ .upload-type {
+    display: block;
+  }
+
+  .ckan-resource-upload-field .btn-remove-url-upload {
     position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    transition: width 0.3s;
-    transition-timing-function: ease-in;
-    background-color: rgba(255, 255, 255, 0.33);
-  }
-
-  #fileUpload {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-    opacity: 0;
+    margin-right: 0;
+    margin-top: 11px;
+    top: 1.5em;
+    right: 0.25em;
+    padding: 0 12px;
+    border-radius: 100px;
   }
 
 </style>
