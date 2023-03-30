@@ -99,6 +99,8 @@
   }
 
   function removeFileUpload() {
+      resource_url_none = true
+      resource_type = undefined
       removed_file = true
       current_file_url = ''
       fileVar = ''
@@ -144,7 +146,10 @@
 
 <div class="ckan-resource-upload-field form-group">
 
+  {#if resource_url_none}
   <!-- Upload / Link buttons -->
+  <label class="form-label" for="field-resource-url">Data</label>
+
   <input type="checkbox" id="resource-url-none" name="url_none" value="" checked={resource_url_none}>
 
   <div class="select-type">
@@ -155,6 +160,7 @@
             <i class="fa fa-globe"></i>Link</button>
     </div>
   </div>
+  {/if}
 
 
   <!-- File input -->
@@ -202,7 +208,7 @@
   <input type="checkbox" id="resource-url-link" name="url_link" value="" checked={resource_type != 'upload'}>
   <div class="select-type">
     <div class="link-type">
-      <button type="button" class="btn btn-danger btn-remove-url-upload" on:click={(e) => { resource_url = ''}}
+      <button type="button" class="btn btn-danger btn-remove-url-upload" on:click={(e) => { resource_url = ''; resource_url_none = true }}
         >Remove</button>
 
       <div class="form-group control-full">
