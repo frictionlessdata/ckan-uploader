@@ -11,15 +11,20 @@
 
   let fileVar;
   let percentage = 0;
+  // State variable to check if the file is being upload
   let is_uploading = false
+  // State variable to check if we are waiting for the server response (e.g. detecting the schema)
   let is_waiting = false
+  // State variable to check after the file is uploaded and the server already returned a response
   let is_completed = false
   let dispatch = createEventDispatcher()
   let action_type = update?'update':'create'
   let new_url = ''
   let resource_type = url_type
+  let resource_url_none = action_type === 'create'
   let resource_url = ''
   let current_file_url = ''
+  let removed_file = false
 
   if (url_type != 'upload') {
     resource_url = current_url
@@ -74,7 +79,33 @@
   }
 
   function changeResourceType(url_type) {
+      resource_url_none = false
       resource_type = url_type
+
+      if (url_type != 'upload') {
+          if (removed_file)
+            removed_file = false
+      }
+  }
+
+  function fileInput(node) {
+      if (!removed_file) {
+          node.click()
+      }
+  }
+
+  function urlInput(node) {
+    node.focus()
+  }
+
+  function removeFileUpload() {
+      removed_file = true
+      current_file_url = ''
+      fileVar = ''
+      is_uploading = false
+      is_waiting = false
+      is_completed = false
+      percentage = 0
   }
 
   async function handleFileChange(event) {
@@ -109,102 +140,163 @@
     }
   }
 </script>
-<div class="form-group">
-  <a class="btn btn-default" class:active={resource_type == 'upload'} on:click={(e) => { changeResourceType('upload') }}>
-    <i class="fa fa-cloud-upload"/>File
-  </a>
-  <a class="btn btn-default" class:active={resource_type != 'upload' && resource_type != 'None'} on:click={(e) => { changeResourceType('') }}>
-    <i class="fa fa-globe"/>Link
-  </a>
+
+
+<div class="ckan-resource-upload-field form-group">
+
+  <!-- Upload / Link buttons -->
+  <input type="checkbox" id="resource-url-none" name="url_none" value="" checked={resource_url_none}>
+
+  <div class="select-type">
+    <div role="group" aria-labelledby="resource-menu-label">
+      <button type="button" class="btn btn-default" id="resource-upload-button" title="Upload a file on your computer"  on:click={(e) => { changeResourceType('upload') }}>
+            <i class="fa fa-cloud-upload"></i>Upload</button>
+      <button type="button" class="btn btn-default" id="resource-link-button" title="Link to a URL on the internet (you can also link to an API)"   on:click={(e) => { changeResourceType('') }}>
+            <i class="fa fa-globe"></i>Link</button>
+    </div>
+  </div>
+
+
+  <!-- File input -->
+  <input type="checkbox" id="resource-url-upload" name="url_upload" checked={resource_type == 'upload'}>
   {#if resource_type == 'upload'}
-  <div id="fileUploadWidget"> 
-    <div id="widget-label">
-    {#if !is_uploading && !is_waiting && !is_completed}
-      {#if update}
-        Select a file to replace the current one
-      {:else}
-      Select a file to upload
-      {/if}
-    {:else }
-    <div id="percentage">
-      <div class="percentage-text">
-      {#if !is_waiting }
-        {#if !is_completed}
-            {percentage}%
-        {/if}
-      {:else}
-      Waiting for data schema detection...
-      {/if}
-      {#if is_completed }
-      File uploaded
-      {/if}
-      </div>
-      <div id="percentage-bar" style:width="{percentage}%">
+  <input readonly={(url_type != 'upload')?undefined:true } id="field_url" class="form-control" type="text" name="url" bind:value={current_file_url}>
+  <div class="select-type">
+    <div class="upload-type">
+      <button type="button" class="btn btn-danger btn-remove-url-upload" on:click={(e) => { removeFileUpload() }}>
+      Remove</button>
+
+      <div class="form-group control-full">
+        <label class="form-label" for="field-resource-upload">File</label>
+        <div class="controls ">
+          {#if current_file_url != ''}
+            {current_file_url}
+          {:else}
+          <input id="field-resource-upload" type="file" name="upload" class="form-control" use:fileInput bind:files={fileVar} on:change={handleFileChange}>
+          {#if is_uploading }
+          <div id="progress-info">
+             <div class="percentage-text">
+               {#if !is_waiting }
+                 {`⌛ Uploading... ${percentage}%`}
+               {:else }
+                 <div>Waiting for data schema detection...</div>
+               {/if}
+               {#if is_completed }
+                 <div>File uploaded</div>
+               {/if}
+             </div>
+             <div id="percentage">
+               <div id="percentage-bar" style:width="{percentage}%"></div>
+             </div>
+         </div>
+         {/if}
+         {/if}
+        </div>
       </div>
     </div>
-    {/if}
-    </div>
-    <input id="fileUpload" type="file" bind:files={fileVar} on:change={handleFileChange}>
   </div>
   {/if}
 
-  {#if resource_type == 'upload'}
-    {#if current_file_url != ''}
-  <div class="controls">
-    <label class="control-label" for="field_url">Current file</label>
-    <div class="controls">
-      <input readonly={(url_type != 'upload')?undefined:true } id="field_url" class="form-control" type="text" name="url" bind:value={current_file_url}>
-    </div>
-  </div>
-    {/if}
-  {:else}
-  {#if resource_type != 'None'}
-  <div id="resourceURL" class="controls">
-    <label class="control-label" for="field_url">URL</label>
-    <div class="controls">
-      <input id="field_url" class="form-control" type="text" name="url" bind:value={resource_url}>
-      <input type="hidden" name="clear_upload" value="true">
+  {#if resource_type != 'upload' && !resource_url_none}
+  <!-- URL input -->
+  <input type="checkbox" id="resource-url-link" name="url_link" value="" checked={resource_type != 'upload'}>
+  <div class="select-type">
+    <div class="link-type">
+      <button type="button" class="btn btn-danger btn-remove-url-upload" on:click={(e) => { resource_url = ''}}
+        >Remove</button>
+
+      <div class="form-group control-full">
+        <label class="form-label" for="field-resource-url">URL</label>
+        <div class="controls ">
+          <input id="field-resource-url" type="url" name="url" bind:value={resource_url} use:urlInput placeholder="http://example.com/external-data.csv" class="form-control">
+        </div>
+      </div>
     </div>
   </div>
   {/if}
-  {/if}
+
 </div>
 
+
 <style>
-  #resourceURL {
-    margin-top: 10px;
+  .ckan-resource-upload-field > input[type=checkbox] {
+    display: none;
   }
 
-  #fileUploadWidget {
+  .ckan-resource-upload-field > div.select-type {
     position: relative;
-    display: flex;
-    max-width: 400px;
-    border: 2px solid #0c4a6e;
-    border-radius: 4px;
-    margin-top: 10px;
-    background-color: rgb(22, 73, 89);
     margin-bottom: 10px;
   }
 
-  #fileUploadWidget #widget-label {
-    width: 100%;
-    height: 100%;
-    color: white;
-    justify-content: center;
-    display: flex;
+  .ckan-resource-upload-field > div.select-type > div.link-type {
+  }
+
+  .ckan-resource-upload-field > input[type=checkbox]:checked + div.select-type {
+    display: block;
+  }
+
+  .ckan-resource-upload-field label.btn::after {
+    content: "";
+  }
+
+  .ckan-resource-upload-field .btn-remove-url .icon-remove {
+    margin-right: 0;
+  }
+
+  .ckan-resource-upload-field input#field-clear-upload {
+    display: none;
+  }
+
+  .ckan-resource-upload-field input#field-clear-upload + div.upload-type {
+    display: none;
+  }
+
+  .ckan-resource-upload-field input#field-clear-upload ~ .upload-type {
+    display: none;
+  }
+
+  .ckan-resource-upload-field input#field-clear-upload:checked + div.upload-type {
+    display: none;
+  }
+
+  .ckan-resource-upload-field input#field-clear-upload:checked ~ .upload-type {
+    display: block;
+  }
+
+  .ckan-resource-upload-field .btn-remove-url-upload {
+    position: absolute;
+    margin-right: 0;
+    margin-top: 11px;
+    top: 1.5em;
+    right: 0.25em;
+    padding: 0 12px;
+    border-radius: 100px;
+  }
+
+  #field_url {
+    display: none;
   }
 
   #percentage {
-    width: 100%;
+    flex-grow: 1;
     height: 100%;
     align: middle;
     justify-content: center;
     display: flex;
     position: relative;
+    float: left;
+    min-height: 15px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+  }
+
+  #progress-info {
+    margin-top: 10px;
+    display: flex;
   }
 
   .percentage-text {
-    z-index: 20;
+    padding-right: 10px;
   }
 
   #percentage-bar {
@@ -213,18 +305,10 @@
     top: 0;
     left: 0;
     bottom: 0;
+    height: 100%;
     transition: width 0.3s;
     transition-timing-function: ease-in;
-    background-color: rgba(255, 255, 255, 0.33);
-  }
-
-  #fileUpload {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-    opacity: 0;
+    background-color: #005d7a;
   }
 
 </style>
